@@ -21,13 +21,13 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: BETTER_AUTH_URL
-        sync: false
+        value: https://mentorlagbe-as-9-server.onrender.com
       - key: API_URL
-        sync: false
+        value: https://mentorlagbe-as-9-server.onrender.com
       - key: CLIENT_URL
-        sync: false
+        value: https://mentorlagbe-client.vercel.app
       - key: CORS_ORIGIN
-        sync: false
+        value: https://mentorlagbe-client.vercel.app
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY
