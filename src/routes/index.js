@@ -1,5 +1,6 @@
 const express = require("express");
 const authRoutes = require("./auth.routes");
+const tutorRoutes = require("./tutor.routes");
 const tuitionRoutes = require("./tuition.routes");
 const userRoutes = require("./user.routes");
 const applicationRoutes = require("./application.routes");
@@ -11,6 +12,9 @@ router.get("/health", (_req, res) => {
 });
 
 router.use("/auth", authRoutes);
+// Tutor-specific paths are mounted first so /tuitions/mine is not swallowed
+// by the public /tuitions/:id route.
+router.use("/", tutorRoutes);
 router.use("/", tuitionRoutes);
 router.use("/", userRoutes);
 router.use("/", applicationRoutes);
