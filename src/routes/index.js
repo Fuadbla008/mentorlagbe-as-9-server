@@ -7,6 +7,7 @@ const tuitionRoutes = require("./tuition.routes");
 const userRoutes = require("./user.routes");
 const applicationRoutes = require("./application.routes");
 const bookmarkRoutes = require("./bookmark.routes");
+const paymentRoutes = require("./payment.routes");
 
 const router = express.Router();
 
@@ -24,5 +25,6 @@ router.use("/", tuitionRoutes);
 router.use("/", userRoutes);
 router.use("/", applicationRoutes);
 router.use("/", bookmarkRoutes);
+router.use("/", paymentRoutes);
 
 module.exports = router;

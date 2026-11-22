@@ -6,6 +6,7 @@ const compression = require("compression");
 const env = require("./config/env");
 const apiRoutes = require("./routes");
 const { getNodeHandler } = require("./config/better-auth");
+const paymentController = require("./controllers/payment.controller");
 const { notFound, errorHandler } = require("./middleware/error");
 
 function createApp() {
@@ -34,6 +35,9 @@ function createApp() {
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
+
+  // Stripe signs the raw body, so this route must run before express.json().
+  app.post("/payments/webhook", express.raw({ type: "application/json" }), paymentController.webhook);
 
   app.use(compression());
   app.use(express.json({ limit: "1mb" }));
