@@ -28,6 +28,7 @@ const env = {
   clientUrl: process.env.CLIENT_URL || "http://localhost:3000",
   corsOrigins: list(process.env.CORS_ORIGIN || process.env.CLIENT_URL || "http://localhost:3000"),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
+  stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   stripeTutorPriceId: process.env.STRIPE_TUTOR_PRICE_ID,
   stripeStudentPriceId: process.env.STRIPE_STUDENT_PRICE_ID,
@@ -40,7 +41,9 @@ const env = {
 };
 
 const required = ["mongoUri", "betterAuthSecret", "jwtSecret"];
-const productionOnly = ["stripeSecretKey", "stripeWebhookSecret", "imgbbKey"];
+// A webhook secret is optional: Stripe Checkout still works via the signed
+// /api/payments/verify fallback when the webhook is not configured.
+const productionOnly = ["stripeSecretKey", "imgbbKey"];
 const missing = required.filter((key) => !env[key]);
 if (isProduction) missing.push(...productionOnly.filter((key) => !env[key]));
 
@@ -50,6 +53,10 @@ if (missing.length) {
 
 if (env.betterAuthSecret.length < 16 || env.jwtSecret.length < 16) {
   throw new Error("BETTER_AUTH_SECRET and JWT_SECRET must each be at least 16 characters.");
+}
+
+if (isProduction && !env.stripeWebhookSecret) {
+  console.warn("[stripe] STRIPE_WEBHOOK_SECRET is unset; webhooks are disabled. Use /api/payments/verify after checkout.");
 }
 
 module.exports = Object.freeze(env);

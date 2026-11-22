@@ -105,7 +105,9 @@ const fulfill = async (session) => {
 const webhook = async (req, res, next) => {
   try {
     if (!env.stripeWebhookSecret) {
-      throw ApiError.serviceUnavailable("STRIPE_WEBHOOK_SECRET is not configured.");
+      throw ApiError.serviceUnavailable(
+        "STRIPE_WEBHOOK_SECRET is not configured. Upgrade with /api/payments/verify?session_id=... instead.",
+      );
     }
     const signature = req.headers["stripe-signature"];
     if (!signature) throw ApiError.badRequest("Missing Stripe signature.");
