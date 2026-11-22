@@ -19,6 +19,7 @@ async function initAuth() {
   auth = betterAuth({
     secret: env.betterAuthSecret,
     baseURL: env.betterAuthUrl,
+    basePath: "/auth",
     trustedOrigins: env.corsOrigins,
     database: mongodbAdapter(db, { client, transaction: env.mongoTransactions }),
     emailAndPassword: {
