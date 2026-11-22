@@ -4,9 +4,7 @@ const controller = require("../controllers/bookmark.controller");
 
 const router = express.Router();
 
-router.use(verifyStudent);
-
-router.get("/bookmarks/mine", controller.mine);
-router.post("/bookmarks", controller.toggle);
+router.get("/bookmarks/mine", verifyStudent, controller.mine);
+router.post("/bookmarks", verifyStudent, controller.toggle);
 
 module.exports = router;

@@ -4,13 +4,11 @@ const controller = require("../controllers/admin.controller");
 
 const router = express.Router();
 
-router.use(verifyAdmin);
-
-router.get("/admin/users", controller.users);
-router.patch("/admin/users/:id/role", controller.updateRole);
-router.get("/admin/tuitions", controller.tuitions);
-router.patch("/admin/tuitions/:id/approval", controller.moderate);
-router.get("/admin/payments", controller.payments);
-router.get("/admin/stats", controller.stats);
+router.get("/admin/users", verifyAdmin, controller.users);
+router.patch("/admin/users/:id/role", verifyAdmin, controller.updateRole);
+router.get("/admin/tuitions", verifyAdmin, controller.tuitions);
+router.patch("/admin/tuitions/:id/approval", verifyAdmin, controller.moderate);
+router.get("/admin/payments", verifyAdmin, controller.payments);
+router.get("/admin/stats", verifyAdmin, controller.stats);
 
 module.exports = router;

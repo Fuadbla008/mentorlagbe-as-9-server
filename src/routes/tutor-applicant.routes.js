@@ -4,9 +4,7 @@ const controller = require("../controllers/tutor-applicant.controller");
 
 const router = express.Router();
 
-router.use(verifyTutor);
-
-router.get("/applications/incoming", controller.incoming);
-router.patch("/applications/:id/status", controller.updateStatus);
+router.get("/applications/incoming", verifyTutor, controller.incoming);
+router.patch("/applications/:id/status", verifyTutor, controller.updateStatus);
 
 module.exports = router;
