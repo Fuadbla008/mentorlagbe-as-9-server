@@ -17,6 +17,8 @@ const errorHandler = (error, req, res, _next) => {
   } else if (error instanceof multer.MulterError) {
     statusCode = 400;
     message = error.code === "LIMIT_FILE_SIZE" ? "Image must be smaller than 5 MB." : error.message;
+  } else if (/Only JPG, PNG, WEBP and GIF images/.test(error.message || "")) {
+    statusCode = 400;
   } else if (error.name === "CastError") {
     statusCode = 400;
     message = `Invalid ${error.path}: ${error.value}.`;
