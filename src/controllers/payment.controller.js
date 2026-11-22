@@ -56,7 +56,7 @@ const checkout = async (req, res, next) => {
       line_items: lineItems,
       customer_email: req.user.email,
       client_reference_id: req.user._id,
-      success_url: `${env.clientUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${env.apiUrl.replace(/\/$/, "")}/payments/return?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${env.clientUrl}/payment/cancel`,
       metadata: {
         userId: req.user._id,
@@ -152,4 +152,28 @@ const verify = async (req, res, next) => {
   }
 };
 
-module.exports = { checkout, webhook, verify };
+// Stripe sends the browser here after Checkout. Verifying on this redirect means
+// Pro activation does not depend on a webhook secret or on the client calling
+// /api/payments/verify. fulfill() is idempotent, so a webhook can also fire.
+const returnFromCheckout = async (req, res, next) => {
+  try {
+    const sessionId = String(req.query.session_id || "");
+    if (!sessionId) throw ApiError.badRequest("Missing session_id.");
+
+    const session = await getStripe().checkout.sessions.retrieve(sessionId);
+    if (session.payment_status !== "paid") {
+      return res.redirect(302, `${env.clientUrl.replace(/\/$/, "")}/payment/cancel`);
+    }
+
+    await fulfill(session);
+    const params = new URLSearchParams({
+      plan: session.metadata?.planName || "Pro",
+      amount: String((session.amount_total || 0) / 100),
+    });
+    res.redirect(302, `${env.clientUrl.replace(/\/$/, "")}/payment/success?${params}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { checkout, webhook, verify, returnFromCheckout };

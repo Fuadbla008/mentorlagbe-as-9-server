@@ -15,13 +15,14 @@
 - `POST /payments/webhook` uses `express.raw()` and is registered before `express.json()` in `src/app.js`. Moving it breaks Stripe signature verification.
 - Express 5 uses `path-to-regexp` 8: `/*` and `/:id?` throw. Use `/*splat` (or `/{*splat}`) and `/{/:id}`.
 - Four domain collections (`users`, `tuitions`, `applications`, `payments`); BetterAuth additionally writes `sessions`, `accounts`, and `verifications`. Bookmarks are embedded in `users.bookmarks`.
-- Stripe Checkout works without a webhook secret: `GET /api/payments/verify?session_id=...` fulfills the same payment record and plan upgrade. Webhook fulfillment is idempotent via the unique `stripeSessionId`.
+- Stripe Checkout works without a webhook secret: Checkout's `success_url` points at `GET /api/payments/return?session_id=...`, which verifies the paid session and redirects to the client success page. `GET /api/payments/verify?session_id=...` does the same for API clients. Webhook fulfillment is idempotent via the unique `stripeSessionId`.
+- `API_URL` is the public API origin used to build that `success_url`; it defaults to `BETTER_AUTH_URL`, so local development needs no extra value.
 
 ## Deployment
 
 - `render.yaml` is the Render blueprint. Values marked `sync: false` are entered in the Render dashboard; secrets are generated for `BETTER_AUTH_SECRET` and `JWT_SECRET`. Local and production differ only by environment values.
 - Health check target: `GET /api/health`. Public runtime config: `GET /api/config`.
-- The frontend expects `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_UPLOAD_URL` in the sibling project `../assignment 9/mentorlagbe/.env.local`.
+- The frontend expects `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_UPLOAD_URL` in the sibling project `../assignment 9/mentorlagbe/.env.local`. Set `API_URL` to the deployed server origin on Render.
 
 ## Frontend contract
 

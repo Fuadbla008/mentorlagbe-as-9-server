@@ -28,6 +28,7 @@ Copy `.env.example` to `.env`. Nothing in `.env` is committed.
 | `PORT`, `NODE_ENV` | Server port and runtime mode |
 | `MONGO_URI`, `MONGO_TRANSACTIONS` | MongoDB connection; enable transactions only on a replica set/Atlas |
 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | BetterAuth secret and public base URL |
+| `API_URL` | Public URL of this API for Stripe's return redirect (defaults to `BETTER_AUTH_URL`) |
 | `JWT_SECRET`, `JWT_EXPIRES_IN` | Signs the bearer token stored by the frontend |
 | `CLIENT_URL`, `CORS_ORIGIN` | Frontend origin for redirects, CORS and checkout redirects (comma-separated allowed) |
 | `STRIPE_SECRET_KEY` | Creates Checkout sessions |
@@ -38,7 +39,7 @@ Copy `.env.example` to `.env`. Nothing in `.env` is committed.
 | `IMGBB_KEY` | Server-side image upload proxy key (never exposed to the browser) |
 | `SEED_ADMIN_PASSWORD`, `SEED_USER_PASSWORD` | Passwords used only by `npm run seed` |
 
-In production, `MONGO_URI`, `BETTER_AUTH_SECRET`, `JWT_SECRET`, `STRIPE_SECRET_KEY`, and `IMGBB_KEY` are mandatory; startup fails fast if any are missing. `STRIPE_WEBHOOK_SECRET` is intentionally optional — without it, webhooks are disabled and Pro activation happens through `GET /api/payments/verify?session_id=...` after the Checkout redirect.
+In production, `MONGO_URI`, `BETTER_AUTH_SECRET`, `JWT_SECRET`, `STRIPE_SECRET_KEY`, and `IMGBB_KEY` are mandatory; startup fails fast if any are missing. `STRIPE_WEBHOOK_SECRET` is intentionally optional — without it, webhooks are disabled and Pro activation happens on the Stripe return redirect (`GET /api/payments/return?session_id=...`), which verifies the session and then redirects to the client success page. `GET /api/payments/verify?session_id=...` does the same thing for API clients.
 
 ## API surface
 
@@ -75,7 +76,7 @@ Admin:
 Payments and media:
 
 - `POST /api/payments/checkout` → `{ url, sessionId }`; the signed-in role decides the plan, so a mismatched `planId` is rejected
-- `POST /payments/webhook` (raw Stripe signature), `GET /api/payments/verify?session_id=...`
+- `POST /payments/webhook` (raw Stripe signature), `GET /api/payments/return?session_id=...`, `GET /api/payments/verify?session_id=...`
 - `POST /api/upload/image` (multipart field `image`) → `{ url }`
 
 All protected endpoints expect `Authorization: Bearer <token>`. The JWT is returned by `/api/auth/signin` and `/api/auth/signup`.
@@ -103,7 +104,7 @@ Use `http://localhost:5000/api` for local development. `src/lib/api.js` already 
 
 1. Push this repo to GitHub (already done).
 2. In Render, choose **New → Blueprint** and select this repository.
-3. Fill in only the `sync: false` values in the dashboard: `MONGO_URI`, `BETTER_AUTH_URL`, `CLIENT_URL`, `CORS_ORIGIN`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `IMGBB_KEY`, and optionally `STRIPE_WEBHOOK_SECRET`/Price IDs. `BETTER_AUTH_SECRET` and `JWT_SECRET` are generated automatically.
+3. Fill in only the `sync: false` values in the dashboard: `MONGO_URI`, `BETTER_AUTH_URL`, `API_URL`, `CLIENT_URL`, `CORS_ORIGIN`, `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `IMGBB_KEY`, and optionally `STRIPE_WEBHOOK_SECRET`/Price IDs. `BETTER_AUTH_SECRET` and `JWT_SECRET` are generated automatically.
 4. Deploy. No code changes are required between local and production; only environment values differ.
 
 ### Other hosts
@@ -111,8 +112,8 @@ Use `http://localhost:5000/api` for local development. `src/lib/api.js` already 
 - Use Node 18+ (the included Dockerfile uses Node 20).
 - Set the production environment variables and run `npm start`.
 - Point the health check at `/api/health`.
-- Add `https://your-server-domain/payments/webhook` in Stripe and copy its signing secret into `STRIPE_WEBHOOK_SECRET` if you want webhook fulfillment. Without it, the verify endpoint handles activation.
-- Set `CORS_ORIGIN` and `CLIENT_URL` to the deployed client domain, and `BETTER_AUTH_URL` to the deployed API URL.
+- Add `https://your-server-domain/payments/webhook` in Stripe and copy its signing secret into `STRIPE_WEBHOOK_SECRET` if you want webhook fulfillment. Without it, the checkout return redirect handles activation.
+- Set `CORS_ORIGIN` and `CLIENT_URL` to the deployed client domain, and `BETTER_AUTH_URL`/`API_URL` to the deployed API URL.
 - After the first deploy, run `npm run seed` once (with production-safe passwords) or create the admin manually, then change the seeded password.
 
 ## Packages used

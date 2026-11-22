@@ -12,5 +12,8 @@ const paymentLimiter = rateLimit({
 
 router.post("/payments/checkout", requireAuth, paymentLimiter, controller.checkout);
 router.get("/payments/verify", requireAuth, paymentLimiter, controller.verify);
+// Stripe redirects the browser here without an Authorization header, so this
+// route is public and identifies the payment by its Checkout session id.
+router.get("/payments/return", paymentLimiter, controller.returnFromCheckout);
 
 module.exports = router;

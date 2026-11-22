@@ -126,6 +126,9 @@ async function run() {
 
     const webhook = await request("/payments/webhook", { method: "POST", body: "{}" });
     check("webhook fails clearly without a secret", webhook.status === 503, `status=${webhook.status}`);
+
+    const returned = await request("/api/payments/return");
+    check("checkout return validates session_id", returned.status === 400, `status=${returned.status}`);
   } finally {
     await new Promise((resolve) => server.close(resolve));
   }
