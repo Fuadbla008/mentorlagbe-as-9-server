@@ -1,9 +1,11 @@
 const env = require("./config/env");
 const createApp = require("./app");
 const { connect, disconnect } = require("./db/mongoose");
+const { initAuth, closeAuth } = require("./config/better-auth");
 
 async function start() {
   await connect();
+  await initAuth();
   console.log(`[mongo] connected to ${env.mongoUri.replace(/\/\/[^@]+@/, "//***@")}`);
 
   const server = createApp().listen(env.port, () => {
@@ -13,6 +15,7 @@ async function start() {
   const shutdown = async (signal) => {
     console.log(`[api] ${signal} received, closing server...`);
     server.close(async () => {
+      await closeAuth();
       await disconnect();
       process.exit(0);
     });

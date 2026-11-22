@@ -5,6 +5,7 @@ const compression = require("compression");
 
 const env = require("./config/env");
 const apiRoutes = require("./routes");
+const { getNodeHandler } = require("./config/better-auth");
 const { notFound, errorHandler } = require("./middleware/error");
 
 function createApp() {
@@ -37,6 +38,11 @@ function createApp() {
   app.use(compression());
   app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: false, limit: "1mb" }));
+
+  // BetterAuth's native endpoints (sessions, email verification, OAuth later).
+  // The /api/auth/* bridge below returns the JWT that the Next.js app stores.
+  const betterAuthHandler = getNodeHandler();
+  if (betterAuthHandler) app.all("/auth/*splat", betterAuthHandler);
 
   app.use("/api", apiRoutes);
 
