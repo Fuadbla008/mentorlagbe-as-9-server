@@ -14,7 +14,17 @@ const list = (value) =>
     .filter(Boolean);
 
 const isProduction = process.env.NODE_ENV === "production";
-const betterAuthUrl = process.env.BETTER_AUTH_URL || `http://localhost:${int(process.env.PORT, 5000)}`;
+
+// Production fallbacks keep Stripe and auth redirects on the deployed domains
+// even when the optional URL variables were not filled in on the host. Without
+// these, Stripe sends the browser to http://localhost:5000/payments/return.
+const DEPLOYED_API_URL = "https://mentorlagbe-as-9-server.onrender.com";
+const DEPLOYED_CLIENT_URL = "https://mentorlagbe-client.vercel.app";
+
+const betterAuthUrl =
+  process.env.BETTER_AUTH_URL || (isProduction ? DEPLOYED_API_URL : `http://localhost:${int(process.env.PORT, 5000)}`);
+const clientUrl =
+  process.env.CLIENT_URL || (isProduction ? DEPLOYED_CLIENT_URL : "http://localhost:3000");
 
 const env = {
   nodeEnv: process.env.NODE_ENV || "development",
@@ -28,8 +38,8 @@ const env = {
   apiUrl: process.env.API_URL || betterAuthUrl,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  clientUrl: process.env.CLIENT_URL || "http://localhost:3000",
-  corsOrigins: list(process.env.CORS_ORIGIN || process.env.CLIENT_URL || "http://localhost:3000"),
+  clientUrl,
+  corsOrigins: list(process.env.CORS_ORIGIN || process.env.CLIENT_URL || clientUrl),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
