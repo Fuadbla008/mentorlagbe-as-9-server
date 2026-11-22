@@ -21,10 +21,15 @@ const isProduction = process.env.NODE_ENV === "production";
 const DEPLOYED_API_URL = "https://mentorlagbe-as-9-server.onrender.com";
 const DEPLOYED_CLIENT_URL = "https://mentorlagbe-client.vercel.app";
 
-const betterAuthUrl =
-  process.env.BETTER_AUTH_URL || (isProduction ? DEPLOYED_API_URL : `http://localhost:${int(process.env.PORT, 5000)}`);
-const clientUrl =
-  process.env.CLIENT_URL || (isProduction ? DEPLOYED_CLIENT_URL : "http://localhost:3000");
+const isLoopback = (value) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(String(value || "").trim());
+const publicUrl = (value, fallback) =>
+  value && !(isProduction && isLoopback(value)) ? String(value).replace(/\/$/, "") : fallback;
+
+const betterAuthUrl = publicUrl(
+  process.env.BETTER_AUTH_URL,
+  isProduction ? DEPLOYED_API_URL : `http://localhost:${int(process.env.PORT, 5000)}`,
+);
+const clientUrl = publicUrl(process.env.CLIENT_URL, isProduction ? DEPLOYED_CLIENT_URL : "http://localhost:3000");
 
 const env = {
   nodeEnv: process.env.NODE_ENV || "development",
@@ -35,11 +40,16 @@ const env = {
   betterAuthSecret: process.env.BETTER_AUTH_SECRET,
   betterAuthUrl,
   // Public URL of this API, used for the Stripe return redirect.
-  apiUrl: process.env.API_URL || betterAuthUrl,
+  apiUrl: publicUrl(process.env.API_URL, betterAuthUrl),
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   clientUrl,
-  corsOrigins: list(process.env.CORS_ORIGIN || process.env.CLIENT_URL || clientUrl),
+  corsOrigins: (() => {
+    const configured = list(process.env.CORS_ORIGIN || process.env.CLIENT_URL).filter(
+      (origin) => !isProduction || !isLoopback(origin),
+    );
+    return configured.length ? configured : [clientUrl];
+  })(),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
