@@ -25,9 +25,9 @@ services:
       - key: API_URL
         value: https://mentorlagbe-as-9-server.onrender.com
       - key: CLIENT_URL
-        value: https://mentorlagbe-client.vercel.app
+        value: https://mentorlagbe-sigma.vercel.app
       - key: CORS_ORIGIN
-        value: https://mentorlagbe-client.vercel.app
+        value: https://mentorlagbe-sigma.vercel.app
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY

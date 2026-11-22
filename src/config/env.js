@@ -19,7 +19,7 @@ const isProduction = process.env.NODE_ENV === "production";
 // even when the optional URL variables were not filled in on the host. Without
 // these, Stripe sends the browser to http://localhost:5000/payments/return.
 const DEPLOYED_API_URL = "https://mentorlagbe-as-9-server.onrender.com";
-const DEPLOYED_CLIENT_URL = "https://mentorlagbe-client.vercel.app";
+const DEPLOYED_CLIENT_URL = "https://mentorlagbe-sigma.vercel.app";
 
 const isLoopback = (value) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/?$/i.test(String(value || "").trim());
 const publicUrl = (value, fallback) =>

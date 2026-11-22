@@ -16,7 +16,7 @@
 - Express 5 uses `path-to-regexp` 8: `/*` and `/:id?` throw. Use `/*splat` (or `/{*splat}`) and `/{/:id}`.
 - Four domain collections (`users`, `tuitions`, `applications`, `payments`); BetterAuth additionally writes `sessions`, `accounts`, and `verifications`. Bookmarks are embedded in `users.bookmarks`.
 - Stripe Checkout works without a webhook secret: Checkout's `success_url` points at `GET /api/payments/return?session_id=...`, which verifies the paid session and redirects to the client success page. `GET /api/payments/verify?session_id=...` does the same for API clients. Webhook fulfillment is idempotent via the unique `stripeSessionId`.
-- `API_URL` is the public API origin used to build that `success_url`; it defaults to `BETTER_AUTH_URL`, and in production both fall back to `https://mentorlagbe-as-9-server.onrender.com`. `CLIENT_URL` falls back to `https://mentorlagbe-client.vercel.app`, which is where the return route finally redirects.
+- `API_URL` is the public API origin used to build that `success_url`; it defaults to `BETTER_AUTH_URL`, and in production both fall back to `https://mentorlagbe-as-9-server.onrender.com`. `CLIENT_URL` falls back to `https://mentorlagbe-sigma.vercel.app`, which is where the return route finally redirects.
 
 ## Deployment
 
