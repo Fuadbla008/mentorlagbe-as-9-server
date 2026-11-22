@@ -11,23 +11,25 @@ const checkoutSchema = z.object({
   planName: z.string().trim().max(60).optional(),
 });
 
+// Never trust the client to choose the price: the signed-in role decides which
+// Pro plan is purchasable. A mismatched planId is rejected instead of silently
+// charging the wrong amount.
 const planConfig = (req) => {
-  const requested = req.body.planId || (req.body.role ? `pro-${req.body.role}` : null);
-  if (requested === "pro-tutor") {
+  const expected =
+    req.user.role === "tutor" ? "pro-tutor" : req.user.role === "student" ? "pro-student" : null;
+  if (!expected) throw ApiError.forbidden("Admins do not need a Pro plan.");
+
+  const requested = req.body.planId || (req.body.role ? `pro-${req.body.role}` : expected);
+  if (requested !== expected) {
+    throw ApiError.badRequest(
+      `Choose the ${expected === "pro-tutor" ? "Pro Tutor" : "Pro Student"} plan for your role.`,
+    );
+  }
+
+  if (expected === "pro-tutor") {
     return { name: "Pro Tutor", amount: env.stripeTutorAmount, priceId: env.stripeTutorPriceId };
   }
-  if (requested === "pro-student") {
-    return { name: "Pro Student", amount: env.stripeStudentAmount, priceId: env.stripeStudentPriceId };
-  }
-  if (req.body.planName) {
-    const isTutor = /tutor/i.test(req.body.planName);
-    return {
-      name: req.body.planName,
-      amount: isTutor ? env.stripeTutorAmount : env.stripeStudentAmount,
-      priceId: isTutor ? env.stripeTutorPriceId : env.stripeStudentPriceId,
-    };
-  }
-  throw ApiError.badRequest("Choose a Pro plan to continue.");
+  return { name: "Pro Student", amount: env.stripeStudentAmount, priceId: env.stripeStudentPriceId };
 };
 
 const checkout = async (req, res, next) => {
