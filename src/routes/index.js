@@ -1,5 +1,6 @@
 const express = require("express");
 const authRoutes = require("./auth.routes");
+const tuitionRoutes = require("./tuition.routes");
 
 const router = express.Router();
 
@@ -8,5 +9,6 @@ router.get("/health", (_req, res) => {
 });
 
 router.use("/auth", authRoutes);
+router.use("/", tuitionRoutes);
 
 module.exports = router;
