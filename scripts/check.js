@@ -10,9 +10,10 @@ function collect(dir) {
   });
 }
 
-const files = [...collect(path.resolve(__dirname, "..", "src")), path.resolve(__dirname, "seed.js")].filter(
-  (file) => fs.existsSync(file),
-);
+const files = [
+  ...collect(path.resolve(__dirname, "..", "src")),
+  ...collect(path.resolve(__dirname)),
+];
 
 let failed = 0;
 for (const file of files) {

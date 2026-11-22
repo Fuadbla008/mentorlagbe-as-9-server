@@ -33,9 +33,13 @@ const errorHandler = (error, req, res, _next) => {
     message = "Invalid authentication token.";
   }
 
-  if (statusCode >= 500) {
+  // Operational 5xx responses (for example an unconfigured Stripe webhook) are
+  // expected, so log them briefly and keep their helpful message for the caller.
+  if (statusCode >= 500 && error.isOperational) {
+    console.warn(`[warn] ${req.method} ${req.path}: ${message}`);
+  } else if (statusCode >= 500) {
     console.error(`[error] ${req.method} ${req.path}:`, error);
-    message = env.isProduction ? "Internal server error." : message;
+    if (env.isProduction) message = "Internal server error.";
   }
 
   res.status(statusCode).json({
