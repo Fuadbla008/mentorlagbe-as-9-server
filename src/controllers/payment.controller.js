@@ -56,8 +56,8 @@ const checkout = async (req, res, next) => {
       line_items: lineItems,
       customer_email: req.user.email,
       client_reference_id: req.user._id,
-      success_url: `${env.apiUrl.replace(/\/$/, "")}/payments/return?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${env.clientUrl}/payment/cancel`,
+      success_url: `https://mentorlagbe-as-9-server.onrender.com/api/payments/return?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://mentorlagbe-sigma.vercel.app/payment/cancel`,
       metadata: {
         userId: req.user._id,
         userEmail: req.user.email,
@@ -162,7 +162,7 @@ const returnFromCheckout = async (req, res, next) => {
 
     const session = await getStripe().checkout.sessions.retrieve(sessionId);
     if (session.payment_status !== "paid") {
-      return res.redirect(302, `${env.clientUrl.replace(/\/$/, "")}/payment/cancel`);
+      return res.redirect(302, `https://mentorlagbe-sigma.vercel.app/payment/cancel`);
     }
 
     await fulfill(session);
@@ -170,7 +170,7 @@ const returnFromCheckout = async (req, res, next) => {
       plan: session.metadata?.planName || "Pro",
       amount: String((session.amount_total || 0) / 100),
     });
-    res.redirect(302, `${env.clientUrl.replace(/\/$/, "")}/payment/success?${params}`);
+    res.redirect(302, `https://mentorlagbe-sigma.vercel.app/payment/success?${params}`);
   } catch (error) {
     next(error);
   }
